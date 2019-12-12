@@ -42,12 +42,15 @@ class Bluetooth(BT):
         # Initialize services
         self.add_service('battery', SERVICE_BATTERY)
         self.add_service('weight_scale', SERVICE_WEIGHT_SCALE)
+        self.add_service('accelerometer', SERVICE_ACCEL)
 
         # Initialize characteristics
         self.add_characteristic(
             'battery', 'battery_level', CHARACTERISTIC_BATTERY_LEVEL, value=50)
         self.add_characteristic(
             'weight_scale', 'weight', CHARACTERISTIC_WEIGHT)
+        self.add_characteristic(
+            'accelerometer', 'axes', CHARACTERISTIC_AXES)
 
         # Set the advertisement
         self.set_advertisement(

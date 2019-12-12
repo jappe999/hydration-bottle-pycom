@@ -1,7 +1,7 @@
 import machine
 import time
 import _thread as thread
-from .constants import *
+from fsr.constants import *
 
 adc = machine.ADC()            # create an ADC object
 fsr = adc.channel(pin='P16')   # create an analog pin on P16
@@ -16,18 +16,30 @@ class FSR:
         self.callback = callback
         return self
 
+    def read_value(self):
+        value = fsr()
+        scaled = FSR.map(value, SCALE)
+
+        return (value, scaled,)
+
     def _loop(self, threshold):
         while True:
-            value = fsr()
-            scaled = FSR.map(value, SCALE)
+            [value, scaled] = self.read_value()
 
             if scaled >= threshold:
                 self.callback(value, scaled)
 
-            time.sleep(5)
+            time.sleep(0.1)
 
-    def read(self, threshold=1):
+    def listen(self, threshold=1):
         try:
             thread.start_new_thread(self._loop, (threshold, ))
         except:
             print("Error: unable to start thread")
+
+
+if __name__ == "__main__":
+    def callback(value, scaled):
+        print(value, scaled)
+
+    FSR().set_callback(callback).listen(0)

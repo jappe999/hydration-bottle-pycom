@@ -1,5 +1,7 @@
-from adxl345 import ADXL345
 import pycom
+import time
+from machine import Pin
+from accelerometer import ADXL345
 from bluetooth import Bluetooth
 from fsr import FSR
 
@@ -15,15 +17,28 @@ def fsr_callback(decimal_value, decimal_scale):
     bluetooth.characteristics.get('weight').value(rounded_scale)
 
 
-def handler(device):
-    pass
-
-
-adxl345 = ADXL345()
-print(adxl345.get_axes())
-
 bluetooth = Bluetooth()
-bluetooth.setup(handler)
+bluetooth.setup()
 
 fsr = FSR()
-fsr.set_callback(fsr_callback).read()
+
+
+def avg(measurements):
+    return sum([weight for weight in measurements]) / len(measurements)
+
+
+def bottle_stable(axes):
+    measurements = []
+    measurements.append(fsr.read_value())
+    time.sleep(1)
+    measurements.append(fsr.read_value())
+    time.sleep(1)
+    measurements.append(fsr.read_value())
+
+    average_weight = round(avg([scale for [value, scale] in measurements]))
+
+    print('pressure = %.3f' % average_weight)
+    bluetooth.characteristics.get('weight').value(bytes([average_weight]))
+
+
+adxl345 = ADXL345().set_callback(bottle_stable).listen()
