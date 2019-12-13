@@ -79,14 +79,18 @@ class ADXL345:
         self.timer = time
         return self
 
+    def read(self):
+        [x, y, z] = self.get_axes()
+        axis = x if self.orientation == 'x' else z
+
+        if abs(axis) >= self.threshold:
+            self.callback([x, y, z])
+
+        return self
+
     def _loop(self):
         while True:
-            [x, y, z] = self.get_axes()
-            axis = x if self.orientation == 'x' else z
-
-            if abs(axis) >= self.threshold:
-                self.callback([x, y, z])
-
+            self.read()
             time.sleep(self.timer)
 
     def listen(self):

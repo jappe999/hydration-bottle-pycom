@@ -1,7 +1,7 @@
 import machine
 import time
 import _thread as thread
-from fsr.constants import *
+from .constants import *
 
 adc = machine.ADC()            # create an ADC object
 fsr = adc.channel(pin='P16')   # create an analog pin on P16

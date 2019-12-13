@@ -12,15 +12,24 @@ pycom.heartbeat(False)
 pycom.rgbled(0x000000)
 
 
-def fsr_callback(decimal_value, decimal_scale):
-    rounded_scale = int(round(decimal_scale * 10, 0))
-    bluetooth.characteristics.get('weight').value(rounded_scale)
-
-
-bluetooth = Bluetooth()
-bluetooth.setup()
-
 fsr = FSR()
+adxl345 = None
+
+
+def get_weight():
+    measurements = []
+    measurements.append(fsr.read_value())
+    time.sleep(0.1)
+    measurements.append(fsr.read_value())
+    time.sleep(0.1)
+    measurements.append(fsr.read_value())
+
+    return round(avg([scale for [value, scale] in measurements]))
+
+
+def send_weight(weight):
+    print('pressure = %.3f' % (weight * 10,))
+    bluetooth.characteristics.get('weight').value(bytes([weight]))
 
 
 def avg(measurements):
@@ -28,17 +37,22 @@ def avg(measurements):
 
 
 def bottle_stable(axes):
-    measurements = []
-    measurements.append(fsr.read_value())
-    time.sleep(1)
-    measurements.append(fsr.read_value())
-    time.sleep(1)
-    measurements.append(fsr.read_value())
-
-    average_weight = round(avg([scale for [value, scale] in measurements]))
-
-    print('pressure = %.3f' % average_weight)
-    bluetooth.characteristics.get('weight').value(bytes([average_weight]))
+    weight = get_weight()
+    send_weight(weight)
 
 
-adxl345 = ADXL345().set_callback(bottle_stable).listen()
+def start(device):
+    global adxl345
+    adxl345 = ADXL345().set_callback(bottle_stable)
+
+    # Send initial weight
+    adxl345.read()
+
+    time.sleep(4)
+
+    # Listen and send weight
+    adxl345.listen()
+
+
+bluetooth = Bluetooth()
+bluetooth.setup(start)
