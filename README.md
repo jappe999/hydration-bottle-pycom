@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="client/static/logo.svg" title="Hydration Bottle Logo" alt="Hydration Bottle Logo" width="200px" />
+  <img src="https://raw.githubusercontent.com/jappe999/hydration-bottle/master/client/static/logo.svg" title="Hydration Bottle Logo" alt="Hydration Bottle Logo" width="200px" />
 </p>
 <h1 align="center">
   Hydration Bottle Pycom
